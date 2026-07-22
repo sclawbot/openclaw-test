@@ -90,13 +90,12 @@ describe('openclaw-test Worker', () => {
   });
 
   it('escapeHtml 转义 HTML 特殊字符', async () => {
-    // escapeHtml is not exported, but we can test it indirectly via renderHome
-    // or we can verify renderHome doesn't contain raw user-controlled values
-    const { renderHome } = await import('../src/views/index');
-    const html = renderHome(
-      { name: '<script>alert("xss")</script>', email: 'test@test.com' },
+    // escapeHtml is not exported, but we can test it indirectly via renderLoginPage
+    // or we can verify renderLoginPage doesn't contain raw user-controlled values
+    const { renderLoginPage } = await import('../src/views/authPage');
+    const html = renderLoginPage(
       'NYC',
-      null,
+      '<script>alert("xss")</script>',
       null,
     );
     // 原始脚本标签不应出现在 HTML 中
