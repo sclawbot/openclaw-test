@@ -2,7 +2,12 @@
  * 首页 HTML 渲染
  */
 
-export function renderHome(user = null, colo = '??', error = '', message = '') {
+export function renderHome(
+  user: UserProfile | null = null,
+  colo = '??',
+  error = '',
+  message = '',
+): string {
   const now = new Date().toLocaleString('zh-CN', { timeZone: 'Asia/Shanghai' });
 
   return `<!DOCTYPE html>
@@ -124,8 +129,8 @@ export function renderHome(user = null, colo = '??', error = '', message = '') {
 
   <script>
     function switchTab(name) {
-      document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-      document.querySelectorAll('.form').forEach(f => f.classList.remove('active'));
+      document.querySelectorAll('.tab').forEach(function(t) { t.classList.remove('active'); });
+      document.querySelectorAll('.form').forEach(function(f) { f.classList.remove('active'); });
       document.querySelector('.tab[onclick*="' + name + '"]').classList.add('active');
       document.getElementById('form-' + name).classList.add('active');
     }

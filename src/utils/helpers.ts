@@ -5,7 +5,7 @@
 /**
  * PBKDF2-SHA256 密码哈希
  */
-export async function hashPassword(password, salt) {
+export async function hashPassword(password: string, salt: string): Promise<string> {
   const enc = new TextEncoder();
   const key = await crypto.subtle.importKey(
     'raw',
@@ -15,7 +15,7 @@ export async function hashPassword(password, salt) {
     ['deriveBits'],
   );
   const bits = await crypto.subtle.deriveBits(
-    { name: 'PBKDF2', salt: enc.encode(salt), iterations: 100000, hash: 'SHA-256' },
+    { name: 'PBKDF2', salt: enc.encode(salt), iterations: 100_000, hash: 'SHA-256' },
     key,
     256,
   );
@@ -24,28 +24,19 @@ export async function hashPassword(password, salt) {
     .join('');
 }
 
-/**
- * 生成 UUID
- */
-export function generateId() {
+/** 生成 UUID v4 */
+export function generateId(): string {
   return crypto.randomUUID();
 }
 
-/**
- * JSON 响应
- */
-export function jsonResponse(data, status = 200) {
-  return new Response(JSON.stringify(data), {
-    status,
-    headers: { 'Content-Type': 'application/json; charset=utf-8' },
-  });
-}
-
-/**
- * 从 Cookie 头中提取 session token
- */
-export function getSessionToken(request) {
+/** 从 Cookie 头中提取 session token */
+export function getSessionToken(request: Request): string | null {
   const cookie = request.headers.get('Cookie') || '';
   const match = cookie.match(/session=([^;]+)/);
   return match ? match[1] : null;
+}
+
+/** 获取客户端 Colo */
+export function getColo(request: Request): string {
+  return (request.cf as { colo?: string } | undefined)?.colo ?? '??';
 }
