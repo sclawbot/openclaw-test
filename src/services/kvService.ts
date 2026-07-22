@@ -3,6 +3,7 @@
  */
 
 import type { UserRecord, UserProfile } from '../types/index';
+import { logger } from '../utils/logger';
 
 const USER_PREFIX = 'user:';
 const SESSION_PREFIX = 'session:';
@@ -28,7 +29,7 @@ export async function getUserByEmail(env: Env, email: string): Promise<UserRecor
   if (!data) return null;
   const parsed: unknown = JSON.parse(data);
   if (!isUserRecord(parsed)) {
-    console.error(JSON.stringify({ event: 'kv_type_error', key: `${USER_PREFIX}${email}` }));
+    logger.error('kv_type_error', { key: `${USER_PREFIX}${email}` });
     return null;
   }
   return parsed;

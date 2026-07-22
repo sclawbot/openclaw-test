@@ -8,13 +8,14 @@ import { getUserByEmail, createUser, createSession, deleteSession } from '../../
 import { renderLoginPage } from '../../views/authPage';
 import { renderDashboard } from '../../views/dashboard';
 import { checkAuthRateLimit } from '../../utils/rateLimiter';
+import { logger } from '../../utils/logger';
 import type { UserRecord } from '../../types/index';
 
 /** 注册 */
 export async function register(request: Request, env: Env, colo: string): Promise<Response> {
   // 速率限制检查
   if (await checkAuthRateLimit(env, request)) {
-    console.log(JSON.stringify({ event: 'rate_limited', action: 'register', ip: request.headers.get('CF-Connecting-IP') }));
+    logger.info('rate_limited', { action: 'register', ip: request.headers.get('CF-Connecting-IP') });
     return html(renderLoginPage(colo, '请求过于频繁，请稍后再试'));
   }
 
@@ -37,7 +38,7 @@ export async function register(request: Request, env: Env, colo: string): Promis
 
   const existing = await getUserByEmail(env, email);
   if (existing) {
-    console.log(JSON.stringify({ event: 'register_fail', reason: 'email_exists', email }));
+    logger.info('register_fail', { reason: 'email_exists', email });
     return html(renderLoginPage(colo, '该邮箱已注册'));
   }
 
@@ -55,7 +56,7 @@ export async function register(request: Request, env: Env, colo: string): Promis
   await createUser(env, user);
   const token = await createSession(env, email);
 
-  console.log(JSON.stringify({ event: 'register_success', email, userId: user.id }));
+  logger.info('register_success', { email, userId: user.id });
   return html(renderDashboard({ name, email }, colo, null, '🎉 注册成功！'), {
     'Set-Cookie': sessionCookie(token),
   });
@@ -65,7 +66,7 @@ export async function register(request: Request, env: Env, colo: string): Promis
 export async function login(request: Request, env: Env, colo: string): Promise<Response> {
   // 速率限制检查
   if (await checkAuthRateLimit(env, request)) {
-    console.log(JSON.stringify({ event: 'rate_limited', action: 'login', ip: request.headers.get('CF-Connecting-IP') }));
+    logger.info('rate_limited', { action: 'login', ip: request.headers.get('CF-Connecting-IP') });
     return html(renderLoginPage(colo, '请求过于频繁，请稍后再试'));
   }
 
@@ -79,18 +80,18 @@ export async function login(request: Request, env: Env, colo: string): Promise<R
 
   const user = await getUserByEmail(env, email);
   if (!user) {
-    console.log(JSON.stringify({ event: 'login_fail', reason: 'user_not_found', email }));
+    logger.info('login_fail', { reason: 'user_not_found', email });
     return html(renderLoginPage(colo, '邮箱或密码错误'));
   }
 
   const hash = await hashPassword(password, user.salt);
   if (hash !== user.passwordHash) {
-    console.log(JSON.stringify({ event: 'login_fail', reason: 'wrong_password', email }));
+    logger.info('login_fail', { reason: 'wrong_password', email });
     return html(renderLoginPage(colo, '邮箱或密码错误'));
   }
 
   const token = await createSession(env, email);
-  console.log(JSON.stringify({ event: 'login_success', email }));
+  logger.info('login_success', { email });
   return html(renderDashboard({ name: user.name, email }, colo, null, '👋 登录成功！'), {
     'Set-Cookie': sessionCookie(token),
   });
@@ -102,7 +103,7 @@ export async function logout(request: Request, env: Env, colo: string): Promise<
   const match = cookie.match(/session=([^;]+)/);
   if (match) {
     await deleteSession(env, match[1]);
-    console.log(JSON.stringify({ event: 'logout' }));
+    logger.info('logout');
   }
   return html(renderLoginPage(colo, null, '已退出登录'), {
     'Set-Cookie': clearSessionCookie(),
