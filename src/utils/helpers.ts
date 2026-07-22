@@ -5,9 +5,9 @@
 /**
  * PBKDF2-SHA256 密码哈希
  *
- * 迭代次数 600,000 — 在 Cloudflare Workers 10ms CPU 限制下，
- * 此运算在单个请求中可完成，但接近 CPU 预算上限。
- * 若需降低延迟可适当减少迭代次数。
+ * 迭代次数 100,000 — Cloudflare Workers 的 Web Crypto API 实现
+ * 限制 PBKDF2 迭代数不超过 100,000（高于此值会抛异常）。
+ * 作为补偿，已配合密码学安全盐值 + 密码最小 8 位 + 限流措施。
  */
 export async function hashPassword(password: string, salt: string): Promise<string> {
   const enc = new TextEncoder();
@@ -19,7 +19,7 @@ export async function hashPassword(password: string, salt: string): Promise<stri
     ['deriveBits'],
   );
   const bits = await crypto.subtle.deriveBits(
-    { name: 'PBKDF2', salt: enc.encode(salt), iterations: 600_000, hash: 'SHA-256' },
+    { name: 'PBKDF2', salt: enc.encode(salt), iterations: 100_000, hash: 'SHA-256' },
     key,
     256,
   );
