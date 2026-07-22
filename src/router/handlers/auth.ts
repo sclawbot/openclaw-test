@@ -5,7 +5,7 @@
 import { hashPassword, generateId, generateSalt, isValidEmail } from '../../utils/helpers';
 import { html, sessionCookie, clearSessionCookie } from '../../utils/response';
 import { getUserByEmail, createUser, createSession, deleteSession } from '../../services/kvService';
-import { renderHome } from '../../views/home';
+import { renderHome } from '../../views/index';
 import { checkAuthRateLimit } from '../../utils/rateLimiter';
 import type { UserRecord } from '../../types/index';
 

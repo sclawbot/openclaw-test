@@ -5,7 +5,7 @@
 import { html } from '../../utils/response';
 import { getSessionToken } from '../../utils/helpers';
 import { getUserBySession } from '../../services/kvService';
-import { renderHome } from '../../views/home';
+import { renderHome } from '../../views/index';
 
 export async function handleHome(request: Request, env: Env, colo: string): Promise<Response> {
   const token = getSessionToken(request);

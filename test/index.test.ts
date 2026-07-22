@@ -92,7 +92,7 @@ describe('openclaw-test Worker', () => {
   it('escapeHtml 转义 HTML 特殊字符', async () => {
     // escapeHtml is not exported, but we can test it indirectly via renderHome
     // or we can verify renderHome doesn't contain raw user-controlled values
-    const { renderHome } = await import('../src/views/home');
+    const { renderHome } = await import('../src/views/index');
     const html = renderHome(
       { name: '<script>alert("xss")</script>', email: 'test@test.com' },
       'NYC',
