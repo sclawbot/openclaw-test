@@ -1,6 +1,10 @@
 /**
  * 统一响应封装
+ *
+ * 安全策略（CSP）定义在 src/views/layout.ts，不在此处重复。
  */
+
+import { CSP } from '../views/layout';
 
 /** JSON 响应 */
 export function json<T>(data: T, status = 200): Response {
@@ -12,15 +16,7 @@ export function json<T>(data: T, status = 200): Response {
 
 /** HTML 响应 */
 export function html(body: string, extraHeaders: Record<string, string> = {}): Response {
-  const defaultCSP = [
-    "default-src 'self'",
-    "script-src 'self' 'unsafe-inline'",
-    "style-src 'self' 'unsafe-inline'",
-    "img-src 'self' data:",
-    "form-action 'self'",
-    "base-uri 'self'",
-    "frame-ancestors 'none'",
-  ].join('; ');
+  const defaultCSP = CSP;
   return new Response(body, {
     headers: {
       'Content-Type': 'text/html; charset=utf-8',

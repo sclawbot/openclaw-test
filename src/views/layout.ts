@@ -1,6 +1,20 @@
 /**
- * 全局布局模板 — 所有页面共享的 HTML 骨架与公共样式
+ * 全局布局模板 — 所有页面共享的 HTML 骨架、公共样式与安全策略
+ *
+ * 安全相关配置（CSP、meta 标签等）统一在此处管理，
+ * 后续修改 CSP、添加安全 header 只需改动这一个文件。
  */
+
+/** Content-Security-Policy — 安全策略，统一在此管理 */
+export const CSP = [
+  "default-src 'self'",
+  "script-src 'self' 'unsafe-inline'",
+  "style-src 'self' 'unsafe-inline'",
+  "img-src 'self' data:",
+  "form-action 'self'",
+  "base-uri 'self'",
+  "frame-ancestors 'none'",
+].join('; ');
 
 export function renderLayout(
   title: string,
