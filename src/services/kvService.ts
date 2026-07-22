@@ -25,11 +25,24 @@ function isUserRecord(data: unknown): data is UserRecord {
 
 /** 通过邮箱获取用户 */
 export async function getUserByEmail(env: Env, email: string): Promise<UserRecord | null> {
-  const data = await env.USERS_KV.get(`${USER_PREFIX}${email}`);
+  const key = `${USER_PREFIX}${email}`;
+  let data: string | null;
+  try {
+    data = await env.USERS_KV.get(key);
+  } catch (err: any) {
+    logger.error('kv_error', { operation: 'get', key, error: err.message });
+    return null;
+  }
   if (!data) return null;
-  const parsed: unknown = JSON.parse(data);
+  let parsed: unknown;
+  try {
+    parsed = JSON.parse(data);
+  } catch (err: any) {
+    logger.error('kv_type_error', { key, error: err.message });
+    return null;
+  }
   if (!isUserRecord(parsed)) {
-    logger.error('kv_type_error', { key: `${USER_PREFIX}${email}` });
+    logger.error('kv_type_error', { key });
     return null;
   }
   return parsed;
@@ -37,26 +50,48 @@ export async function getUserByEmail(env: Env, email: string): Promise<UserRecor
 
 /** 创建用户 */
 export async function createUser(env: Env, user: UserRecord): Promise<void> {
-  await env.USERS_KV.put(`${USER_PREFIX}${user.email}`, JSON.stringify(user));
+  const key = `${USER_PREFIX}${user.email}`;
+  try {
+    await env.USERS_KV.put(key, JSON.stringify(user));
+  } catch (err: any) {
+    logger.error('kv_error', { operation: 'put', key, error: err.message });
+  }
 }
 
 /** 创建会话，返回 token */
 export async function createSession(env: Env, email: string): Promise<string> {
   const token = crypto.randomUUID();
-  await env.USERS_KV.put(`${SESSION_PREFIX}${token}`, email, {
-    expirationTtl: SESSION_TTL,
-  });
+  const key = `${SESSION_PREFIX}${token}`;
+  try {
+    await env.USERS_KV.put(key, email, {
+      expirationTtl: SESSION_TTL,
+    });
+  } catch (err: any) {
+    logger.error('kv_error', { operation: 'put', key, error: err.message });
+    throw err;
+  }
   return token;
 }
 
 /** 通过 session token 获取邮箱 */
 export async function getSessionEmail(env: Env, token: string): Promise<string | null> {
-  return await env.USERS_KV.get(`${SESSION_PREFIX}${token}`);
+  const key = `${SESSION_PREFIX}${token}`;
+  try {
+    return await env.USERS_KV.get(key);
+  } catch (err: any) {
+    logger.error('kv_error', { operation: 'get', key, error: err.message });
+    return null;
+  }
 }
 
 /** 删除会话 */
 export async function deleteSession(env: Env, token: string): Promise<void> {
-  await env.USERS_KV.delete(`${SESSION_PREFIX}${token}`);
+  const key = `${SESSION_PREFIX}${token}`;
+  try {
+    await env.USERS_KV.delete(key);
+  } catch (err: any) {
+    logger.error('kv_error', { operation: 'delete', key, error: err.message });
+  }
 }
 
 /** 通过 session token 获取用户概要信息 */

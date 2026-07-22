@@ -18,7 +18,7 @@ export function renderLoginPage(
   const loginHtml = `
   <div class="card">
     <div class="paw">🐾</div>
-    <h1>OpenClaw Worker</h1>
+    <h1>Claw Worker</h1>
     <div class="time">${now}</div>
     <div class="zone">中国标准时间 (CST, UTC+8)</div>
 
@@ -51,7 +51,7 @@ export function renderLoginPage(
     </div>
   </div>`;
 
-  return renderLayout('OpenClaw Worker 🐾', loginHtml, {
+  return renderLayout('Claw Worker 🐾', loginHtml, {
     styles: `body{display:flex;align-items:center;justify-content:center;}
     .card {
       width:400px;padding:2.5rem 2rem;

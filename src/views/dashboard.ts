@@ -28,7 +28,7 @@ export function renderDashboard(
     <aside class="sidebar" id="sidebar">
       <div class="sidebar-brand">
         <span class="paw">🐾</span>
-        <h1>OpenClaw Worker</h1>
+        <h1>Claw Worker</h1>
       </div>
       <div class="sidebar-user">
         <div class="avatar-lg">${userInitial}</div>
@@ -106,7 +106,7 @@ export function renderDashboard(
     </div>
   </div>`;
 
-  return renderLayout('OpenClaw Worker 🐾 — 工作台', dashboardHtml, {
+  return renderLayout('Claw Worker 🐾 — 工作台', dashboardHtml, {
     scripts: `function toggleSidebar(){
       var s=document.getElementById('sidebar'),o=document.getElementById('sidebarOverlay');
       if(s.classList.contains('open')){s.classList.remove('open');o.classList.remove('show');}

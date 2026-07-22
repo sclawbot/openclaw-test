@@ -5,6 +5,8 @@
  * 每个 IP + endpoint 组合独立计数。
  */
 
+import { logger } from './logger';
+
 const RATE_LIMIT_PREFIX = 'rate:';
 
 interface RateLimitConfig {
@@ -40,7 +42,13 @@ export async function checkRateLimit(
   const ip = getClientIP(request);
   const key = `${RATE_LIMIT_PREFIX}${ip}:${endpoint}`;
 
-  const current = await env.USERS_KV.get(key);
+  let current: string | null;
+  try {
+    current = await env.USERS_KV.get(key);
+  } catch (err: any) {
+    logger.error('kv_error', { operation: 'get', key, error: err.message });
+    return false; // 出错时放行请求，避免阻止合法用户
+  }
   const count = current ? parseInt(current, 10) : 0;
 
   if (count >= config.maxRequests) {
@@ -48,9 +56,14 @@ export async function checkRateLimit(
   }
 
   // 递增计数器，窗口内首次写入时设置 TTL
-  await env.USERS_KV.put(key, String(count + 1), {
-    expirationTtl: config.windowSeconds,
-  });
+  try {
+    await env.USERS_KV.put(key, String(count + 1), {
+      expirationTtl: config.windowSeconds,
+    });
+  } catch (err: any) {
+    logger.error('kv_error', { operation: 'put', key, error: err.message });
+    return false; // 出错时放行请求，避免阻止合法用户
+  }
 
   return false;
 }
