@@ -5,15 +5,16 @@
 import { json } from '../../utils/response';
 import { getSessionToken } from '../../utils/helpers';
 import { getUserBySession } from '../../services/kvService';
+import type { ApiHealth, ApiInfo, ApiMe } from '../../types/index';
 
 /** GET /api/health */
-export async function handleHealth(colo: string): Promise<Response> {
+export async function handleHealth(_request: Request, _env: Env, colo: string): Promise<Response> {
   const data: ApiHealth = { status: 'ok', worker: 'openclaw-test', colo };
   return json(data);
 }
 
 /** GET /api/info */
-export async function handleInfo(colo: string): Promise<Response> {
+export async function handleInfo(_request: Request, _env: Env, colo: string): Promise<Response> {
   const data: ApiInfo = {
     name: 'openclaw-test',
     runtime: 'cloudflare-workers',

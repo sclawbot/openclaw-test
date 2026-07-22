@@ -8,8 +8,16 @@ export function withErrorHandler(fn: (request: Request, env: Env) => Promise<Res
     try {
       return await fn(request, env);
     } catch (err) {
-      const message = err instanceof Error ? err.message : String(err);
-      return new Response(`Internal Error: ${message}`, { status: 500 });
+      console.error(
+        JSON.stringify({
+          event: 'unhandled_error',
+          message: err instanceof Error ? err.message : String(err),
+          stack: err instanceof Error ? err.stack : undefined,
+          url: request.url,
+          method: request.method,
+        }),
+      );
+      return new Response('Internal Server Error', { status: 500 });
     }
   };
 }

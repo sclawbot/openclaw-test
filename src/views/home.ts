@@ -2,13 +2,32 @@
  * 首页 HTML 渲染
  */
 
+import type { UserProfile } from '../types/index';
+
+/** 转义 HTML 特殊字符，防止 XSS */
+function escapeHtml(str: string): string {
+  return str
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
 export function renderHome(
   user: UserProfile | null = null,
   colo = '??',
-  error = '',
-  message = '',
+  error: string | null = '',
+  message: string | null = '',
 ): string {
   const now = new Date().toLocaleString('zh-CN', { timeZone: 'Asia/Shanghai' });
+
+  // 转义所有用户可控的值
+  const safeColo = escapeHtml(colo);
+  const safeError = error ? escapeHtml(error) : '';
+  const safeMessage = message ? escapeHtml(message) : '';
+  const safeName = user ? escapeHtml(user.name) : '';
+  const safeEmail = user ? escapeHtml(user.email) : '';
 
   return `<!DOCTYPE html>
 <html lang="zh-CN">
@@ -86,15 +105,15 @@ export function renderHome(
     <div class="time">${now}</div>
     <div class="zone">中国标准时间 (CST, UTC+8)</div>
 
-    ${error ? `<div class="msg error">${error}</div>` : ''}
-    ${message ? `<div class="msg success">${message}</div>` : ''}
+    ${safeError ? `<div class="msg error">${safeError}</div>` : ''}
+    ${safeMessage ? `<div class="msg success">${safeMessage}</div>` : ''}
 
     ${user
       ? `
       <div class="profile">
         <div class="paw" style="font-size:2.5rem">👤</div>
-        <div class="name">${user.name}</div>
-        <div class="email">${user.email}</div>
+        <div class="name">${safeName}</div>
+        <div class="email">${safeEmail}</div>
         <div style="margin-top:.5rem"><span class="badge">已登录</span></div>
         <form method="POST" action="/api/logout" style="margin-top:1rem">
           <button class="logout-btn" type="submit">退出登录</button>
@@ -108,7 +127,7 @@ export function renderHome(
       <div id="form-login" class="form active">
         <form method="POST" action="/api/login">
           <input type="email" name="email" placeholder="邮箱" required>
-          <input type="password" name="password" placeholder="密码" required>
+          <input type="password" name="password" placeholder="密码（至少8位）" minlength="8" required>
           <button type="submit">登 录</button>
         </form>
       </div>
@@ -116,14 +135,14 @@ export function renderHome(
         <form method="POST" action="/api/register">
           <input type="text" name="name" placeholder="昵称" required>
           <input type="email" name="email" placeholder="邮箱" required>
-          <input type="password" name="password" placeholder="密码（至少6位）" minlength="6" required>
+          <input type="password" name="password" placeholder="密码（至少8位）" minlength="8" required>
           <button type="submit">注 册</button>
         </form>
       </div>`}
 
     <div style="margin-top:1.5rem;padding-top:1rem;border-top:1px solid rgba(255,255,255,0.08)">
       <span class="badge">openclaw-test</span>
-      <span class="badge">CF-${colo}</span>
+      <span class="badge">CF-${safeColo}</span>
     </div>
   </div>
 

@@ -2,14 +2,36 @@
  * KV 存储服务 — 用户 & 会话数据操作
  */
 
+import type { UserRecord, UserProfile } from '../types/index';
+
 const USER_PREFIX = 'user:';
 const SESSION_PREFIX = 'session:';
 const SESSION_TTL = 86_400 * 7; // 7 天
 
+/** 运行时类型守卫：验证对象是否为合法的 UserRecord */
+function isUserRecord(data: unknown): data is UserRecord {
+  if (typeof data !== 'object' || data === null) return false;
+  const r = data as Record<string, unknown>;
+  return (
+    typeof r.id === 'string' &&
+    typeof r.name === 'string' &&
+    typeof r.email === 'string' &&
+    typeof r.passwordHash === 'string' &&
+    typeof r.salt === 'string' &&
+    typeof r.createdAt === 'string'
+  );
+}
+
 /** 通过邮箱获取用户 */
 export async function getUserByEmail(env: Env, email: string): Promise<UserRecord | null> {
   const data = await env.USERS_KV.get(`${USER_PREFIX}${email}`);
-  return data ? (JSON.parse(data) as UserRecord) : null;
+  if (!data) return null;
+  const parsed: unknown = JSON.parse(data);
+  if (!isUserRecord(parsed)) {
+    console.error(JSON.stringify({ event: 'kv_type_error', key: `${USER_PREFIX}${email}` }));
+    return null;
+  }
+  return parsed;
 }
 
 /** 创建用户 */
